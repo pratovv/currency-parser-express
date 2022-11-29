@@ -5,7 +5,6 @@ class CurrencyController {
     async getAll(req, res, next) {
         try {
             const data = await currencyService.getAll();
-            console.log(data)
             return res.send(data);
         } catch (e) {
             next(e)
