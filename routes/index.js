@@ -3,6 +3,29 @@ const currencyController = require('../controllers/currency-controller')
 const router = new Router();
 /**
  *  @swagger
+ *  components:
+ *    schemas:
+ *      filter:
+ *        type: object
+ *        required:
+ *          - password
+ *        properties:
+ *          email:
+ *            type: string
+ *            description: The email of the user.
+ *          password:
+ *            type: string
+ *            description: password of the user.
+ *        example:
+ *           email: "example.com"
+ *           password: "example"
+ */
+
+
+
+
+/**
+ *  @swagger
  *  /api/getAll:
  *    get:
  *      summary: Lists all currency

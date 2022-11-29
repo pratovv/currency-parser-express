@@ -1,0 +1,182 @@
+Index: controllers/currency-controller.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/controllers/currency-controller.js b/controllers/currency-controller.js
+--- a/controllers/currency-controller.js	
++++ b/controllers/currency-controller.js	
+@@ -1,25 +1,21 @@
+ const currencyService = require('../services/currency-service')
+ 
+ class CurrencyController {
+-
+-    async getAll(req, res) {
++    async getAll(req, res,next) {
+         try {
+             const data = await currencyService.getAll();
+             return res.send(data);
+         } catch (e) {
+-            console.log(e)
+-            res.send(e)
++            next(e)
+         }
+     }
+-
+-
+-    async PostWithFilter(req, res) {
++    async PostWithFilter(req, res,next) {
+         try {
+-            const data = await currencyService.filter()
+-            return res.json(data);
++            const {filterArray} = req.body;
++            const data = await currencyService.filter(filterArray)
++            return res.send(data);
+         } catch (e) {
+-            console.log(e)
+-            res.send(e)
++            next(e)
+         }
+     }
+ }
+Index: services/currency-service.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/services/currency-service.js b/services/currency-service.js
+--- a/services/currency-service.js	
++++ b/services/currency-service.js	
+@@ -1,20 +1,30 @@
+ const request = require("request-promise");
+ const convert = require("xml-js");
+ const BASE_URL = 'https://www.nbkr.kg/XML/weekly.xml';
++const ApiError = require('../exceptions/api-error');
+ 
+ class CurrencyService {
+-
+-
+     async getAll() {
+         const xml = (async () => {
+             return await request({uri: BASE_URL})
+         })()
+-        const response = xml.then((data) => convert.xml2json(data, {compact: true, spaces: 4}))
++        const response = xml.then((data) => JSON.parse(convert.xml2json(data, {compact: true, spaces: 4})))
++            .then(data => data['CurrencyRates']['Currency'])
+         return await response
+     }
+ 
+-    async filter() {
+-
++    async filter(filterArray) {
++        if (!filterArray || filterArray.length === 0) throw ApiError.BadRequest
++        (`Пожалуйста заполните json правильно для фильтрации
++        Пример:{"filterArray":["GBP","DKK"]}`)
++        const response = []
++        const set = new Set(filterArray)
++        const uniqueArray = Array.from(set)
++        const json = await this.getAll()
++        json.map((e) => {
++            uniqueArray.indexOf(e['_attributes']['ISOCode']) !== -1 ? response.push(e) : null;
++        })
++        return response
+     }
+ }
+ 
+Index: package.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/package.json b/package.json
+--- a/package.json	
++++ b/package.json	
+@@ -11,6 +11,7 @@
+   "author": "",
+   "license": "ISC",
+   "dependencies": {
++    "body-parser": "^1.20.1",
+     "cors": "^2.8.5",
+     "express": "^4.18.2",
+     "fast-xml-parser": "^4.0.12",
+Index: index.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/index.js b/index.js
+--- a/index.js	
++++ b/index.js	
+@@ -5,9 +5,14 @@
+ const swaggerJsDoc = require("swagger-jsdoc");
+ const swaggerUI = require("swagger-ui-express");
+ const router = require('./routes/index')
++const bodyParser = require('body-parser')
++const errorMiddleware = require('./middlewares/error-middleware');
+ const PORT = process.env.PORT || 5000;
++
++
+ app.use(morgan("dev"));
+ app.use(cors());
++app.use(bodyParser.json())
+ app.use('/api', router)
+ 
+ const options = {
+@@ -35,4 +40,5 @@
+     swaggerUI.setup(specs, {explorer: true})
+ );
+ app.use(express.json());
++app.use(errorMiddleware);
+ app.listen(PORT, () => console.log(`Server is running on port: ${PORT}`));
+\ No newline at end of file
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	
++++ b/.idea/workspace.xml	
+@@ -1,7 +1,16 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+   <component name="ChangeListManager">
+-    <list default="true" id="a1d9f199-687c-4cd8-9a17-57bd5ed33a03" name="Changes" comment="" />
++    <list default="true" id="a1d9f199-687c-4cd8-9a17-57bd5ed33a03" name="Changes" comment="">
++      <change afterPath="$PROJECT_DIR$/exceptions/api-error.js" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/middlewares/error-middleware.js" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/controllers/currency-controller.js" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/currency-controller.js" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/index.js" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/services/currency-service.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/currency-service.js" afterDir="false" />
++    </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+@@ -45,7 +54,7 @@
+       <workItem from="1669605802506" duration="703000" />
+       <workItem from="1669607479757" duration="3340000" />
+       <workItem from="1669612671256" duration="10146000" />
+-      <workItem from="1669657660346" duration="4134000" />
++      <workItem from="1669657660346" duration="7619000" />
+     </task>
+     <servers />
+   </component>
+Index: package-lock.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/package-lock.json b/package-lock.json
+--- a/package-lock.json	
++++ b/package-lock.json	
+@@ -9,6 +9,7 @@
+       "version": "1.0.0",
+       "license": "ISC",
+       "dependencies": {
++        "body-parser": "^1.20.1",
+         "cors": "^2.8.5",
+         "express": "^4.18.2",
+         "fast-xml-parser": "^4.0.12",

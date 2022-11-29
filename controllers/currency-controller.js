@@ -2,24 +2,24 @@ const currencyService = require('../services/currency-service')
 
 class CurrencyController {
 
-    async getAll(req, res) {
+    async getAll(req, res, next) {
         try {
             const data = await currencyService.getAll();
+            console.log(data)
             return res.send(data);
         } catch (e) {
-            console.log(e)
-            res.send(e)
+            next(e)
         }
     }
 
 
-    async PostWithFilter(req, res) {
+    async PostWithFilter(req, res, next) {
         try {
-            const data = await currencyService.filter()
+            const {filterArray} = req.body
+            const data = await currencyService.filter(filterArray)
             return res.json(data);
         } catch (e) {
-            console.log(e)
-            res.send(e)
+            next(e)
         }
     }
 }

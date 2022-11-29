@@ -1,0 +1,21 @@
+Index: exceptions/api-error.js
+===================================================================
+diff --git a/exceptions/api-error.js b/exceptions/api-error.js
+--- a/exceptions/api-error.js	
++++ b/exceptions/api-error.js	
+@@ -1,0 +1,14 @@
++module.exports = class ApiError extends Error {
++    status;
++    errors;
++
++    constructor(status, message, errors = []) {
++        super(message);
++        this.status = status;
++        this.errors = errors;
++    }
++
++    static BadRequest(message, errors = []) {
++        return new ApiError(400, message, errors);
++    }
++}
+\ No newline at end of file
