@@ -14,7 +14,7 @@ class CurrencyService {
     }
 
     async filter(filterArray) {
-        if (!filterArray || filterArray.length === 0)
+        if (!filterArray || filterArray.length === 0 || typeof (filterArray) !== 'object')
             throw ApiError.BadRequest(`Пожалуйста заполните json правильно 
             Пример: {"filterArray":["GBP","DKK"]}`)
         const response = []

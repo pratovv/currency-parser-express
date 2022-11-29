@@ -1,28 +1,22 @@
 const Router = require('express').Router;
 const currencyController = require('../controllers/currency-controller')
 const router = new Router();
+
 /**
  *  @swagger
  *  components:
  *    schemas:
- *      filter:
+ *      filterArray:
  *        type: object
  *        required:
- *          - password
+ *          - filterArray
  *        properties:
- *          email:
- *            type: string
- *            description: The email of the user.
- *          password:
- *            type: string
- *            description: password of the user.
+ *          filterArray:
+ *            type: array
+ *              items:string
  *        example:
- *           email: "example.com"
- *           password: "example"
+ *           {"filterArray":["GBP","DKK"]}
  */
-
-
-
 
 /**
  *  @swagger
@@ -41,22 +35,19 @@ const router = new Router();
 router.get('/getAll', currencyController.getAll)
 /**
  *  @swagger
- *  /filter:
+ *  /api/filter:
  *    post:
- *      summary: You can filter
+ *      summary: Filter currency
  *      tags: [Currency]
  *      requestBody:
  *        required: true
  *        content:
  *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/filterArray'
  *      responses:
  *        200:
- *          description: Filtered currency
- *          content:
- *            application/json:
- *              schema:
- *        500:
- *          description: Server error
+ *          description: The list of filtered currency.
  */
 router.post('/filter', currencyController.PostWithFilter)
 
