@@ -5,6 +5,7 @@ const ApiError = require('../exceptions/api-error');
 
 class CurrencyService {
     async getAll() {
+        // get xml from the URI and format the xml to json
         const xml = (async () => {
             return await request({uri: BASE_URL})
         })()
@@ -12,7 +13,7 @@ class CurrencyService {
             .then(data => data['CurrencyRates']['Currency'])
         return await response
     }
-
+    // make unique array than filter json by value in unique array
     async filter(filterArray) {
         if (!filterArray || filterArray.length === 0 || typeof (filterArray) !== 'object')
             throw ApiError.BadRequest(`Пожалуйста заполните json правильно 
